@@ -1,5 +1,3 @@
-#include <string>
-
 #include "device.hpp"
 
 namespace backend
@@ -7,13 +5,13 @@ namespace backend
 
 struct Device::Impl
 {
-  std::string const name{"CPU"};
+  static constexpr Type type{Type::CPU};
 };
 
-Device::Device() : impl(new Impl()) {}
+Device::Device() : impl(std::make_unique<Impl>()) {}
 
-Device::~Device() { delete this->impl; }
+Device::~Device() {}
 
-std::string const &Device::name() const & { return this->impl->name; }
+Type Device::type() const { return Device::Impl::type; }
 
 } // namespace backend

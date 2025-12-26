@@ -1,8 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
 
-#include <string>
-
 #include "device.hpp"
 
 namespace backend
@@ -10,25 +8,29 @@ namespace backend
 
 struct Device::Impl
 {
-  std::string const name{"Metal"};
+  static constexpr Type type{Type::METAL};
 
-  id<MTLDevice> device = nil;
+  id<MTLDevice> device{nil};
 
-  Impl() { device = MTLCreateSystemDefaultDevice(); }
+  Impl()
+  {
+    this->device = MTLCreateSystemDefaultDevice();
+    assert(this->device != nil);
+  }
 
   ~Impl()
   {
     // ARC handles device lifetime
-    device = nil;
+    this->device = nil;
   }
 
-  bool valid() const { return device != nil; }
+  bool valid() const { return this->device != nil; }
 };
 
-Device::Device() : impl(new Impl()) {}
+Device::Device() : impl(std::make_unique<Impl>()) {}
 
-Device::~Device() { delete this->impl; }
+Device::~Device() {}
 
-std::string const &Device::name() const & { return this->impl->name; }
+Type Device::type() const { return Device::Impl::type; }
 
 } // namespace backend

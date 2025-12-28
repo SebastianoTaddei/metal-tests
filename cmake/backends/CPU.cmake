@@ -4,8 +4,9 @@ add_library(cpu_backend STATIC
   "${SRC_DIR}/src/backends/cpu/cpu_device.cpp"
 )
 
-target_include_directories(cpu_backend PRIVATE
+target_include_directories(cpu_backend PUBLIC
   "${SRC_DIR}/include"
+  "${SRC_DIR}/src/backends/cpu"
 )
 
 target_link_libraries(cpu_backend

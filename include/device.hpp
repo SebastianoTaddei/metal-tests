@@ -3,6 +3,9 @@
 #include <array>
 #include <cstdint>
 #include <string_view>
+#include <vector>
+
+#include "buffer.hpp"
 
 namespace backend
 {
@@ -35,13 +38,10 @@ class Device
 public:
   virtual ~Device() = default;
 
-  virtual Type type() const = 0;
+  virtual Type type() const                                           = 0;
+  virtual void add(Buffer const &a, Buffer const &b, Buffer &c) const = 0;
+  virtual Buffer new_buffer(std::vector<float> data) const            = 0;
+  virtual std::vector<float> cpu(Buffer const &buffer) const          = 0;
 };
-
-std::shared_ptr<Device> make_cpu_device();
-
-#ifdef GPU_PLAYGROUND_HAS_METAL
-std::shared_ptr<Device> make_metal_device();
-#endif
 
 } // namespace backend

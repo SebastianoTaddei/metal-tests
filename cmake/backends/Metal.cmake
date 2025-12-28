@@ -1,4 +1,5 @@
 set(SHADERS_DIR "${SRC_DIR}/src/backends/metal/shaders")
+set(MTL_LIB_DIR "${BUILD_DIR}/src/backends/metal/shaders")
 
 function(add_metal_library TARGET SHADER_DIR OUTPUT_DIR METALLIB_NAME)
   file(GLOB METAL_SOURCES "${SHADER_DIR}/*.metal")
@@ -41,17 +42,22 @@ add_library(metal_backend STATIC
   "${SRC_DIR}/src/backends/metal/metal_device.mm"
 )
 
-target_include_directories(metal_backend PRIVATE
+target_include_directories(metal_backend PUBLIC
   "${SRC_DIR}/include"
+  "${SRC_DIR}/src/backends/metal"
 )
 
 add_metal_library(metal_backend
-  "${SRC_DIR}/src/backends/metal/shaders"
-  "${BUILD_DIR}/backends/metal/shaders"
+  "${SHADERS_DIR}"
+  "${MTL_LIB_DIR}"
   metal_backend
 )
 
 target_link_libraries(metal_backend
   "-framework Metal"
   "-framework Foundation"
+)
+
+target_compile_definitions(metal_backend PUBLIC
+  METAL_LIB="${MTL_LIB_DIR}/metal_backend.metallib"
 )

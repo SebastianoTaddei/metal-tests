@@ -42,7 +42,7 @@ add_library(metal_backend STATIC
   "${SRC_DIR}/src/backends/metal/metal_device.mm"
 )
 
-target_include_directories(metal_backend PUBLIC
+target_include_directories(metal_backend PRIVATE
   "${SRC_DIR}/include"
   "${SRC_DIR}/src/backends/metal"
 )
@@ -60,4 +60,5 @@ target_link_libraries(metal_backend
 
 target_compile_definitions(metal_backend PUBLIC
   METAL_LIB="${MTL_LIB_DIR}/metal_backend.metallib"
+  GPU_PLAYGROUND_HAS_METAL
 )

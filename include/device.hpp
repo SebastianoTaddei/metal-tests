@@ -1,37 +1,13 @@
 #pragma once
 
-#include <array>
-#include <cstdint>
-#include <string_view>
+#include <memory>
 #include <vector>
 
 #include "buffer.hpp"
+#include "device_types.hpp"
 
-namespace backend
+namespace gpu_playground
 {
-
-#define DEVICE_TYPES                                                                               \
-  X(CPU)                                                                                           \
-  X(METAL)
-
-enum class Type : uint8_t
-{
-#define X(type) type,
-  DEVICE_TYPES
-#undef X
-    COUNT
-};
-
-inline constexpr std::array<std::string_view, static_cast<size_t>(Type::COUNT)> device_names{
-#define X(name) #name,
-  DEVICE_TYPES
-#undef X
-};
-
-inline constexpr std::string_view get_device_name(Type const type)
-{
-  return device_names.at(static_cast<size_t>(type));
-}
 
 class Device
 {
@@ -44,4 +20,36 @@ public:
   virtual std::vector<float> cpu(Buffer const &buffer) const          = 0;
 };
 
+std::unique_ptr<Device> make_cpu_device();
+
+#ifdef GPU_PLAYGROUND_HAS_METAL
+std::unique_ptr<Device> make_metal_device();
+#endif
+
+namespace backend
+{
+
+template <typename First, typename... Rest>
+inline void assert_same_device(First const &first, Rest const &...rest)
+{
+  const Type ref = first.type;
+  ((assert(rest.type == ref && "Buffers are on different devices")), ...);
+}
+
+template <typename First, typename... Rest>
+inline void assert_same_size(First const &first, Rest const &...rest)
+{
+  const std::size_t ref = first.size;
+  ((assert(rest.size == ref && "Buffers have different sizes")), ...);
+}
+
+template <typename First, typename... Rest>
+inline void assert_compatible(First const &first, Rest const &...rest)
+{
+  assert_same_device(first, rest...);
+  assert_same_size(first, rest...);
+}
+
 } // namespace backend
+
+} // namespace gpu_playground

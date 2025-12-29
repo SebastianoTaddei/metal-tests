@@ -20,8 +20,5 @@ if(GPU_PLAYGROUND_ENABLE_METAL)
   target_link_libraries(gpu_playground_backend INTERFACE
     metal_backend
   )
-  target_compile_definitions(gpu_playground_backend INTERFACE
-    GPU_PLAYGROUND_HAS_METAL
-  )
 endif()
 

@@ -2,17 +2,20 @@
 
 #include "device.hpp"
 
-namespace backend
+namespace gpu_playground::backend
 {
 
 class CPUDevice final : public Device
 {
+private:
+  static constexpr Type s_type{Type::CPU};
+
 public:
   CPUDevice();
 
   ~CPUDevice();
 
-  Type type() const override { return Type::CPU; }
+  Type type() const override { return CPUDevice::s_type; }
 
   void add(Buffer const &a, Buffer const &b, Buffer &c) const override;
 
@@ -21,4 +24,4 @@ public:
   std::vector<float> cpu(Buffer const &buffer) const override;
 };
 
-} // namespace backend
+} // namespace gpu_playground::backend

@@ -3,7 +3,7 @@
 
 #include "metal_device.hpp"
 
-namespace backend
+namespace gpu_playground::backend
 {
 
 struct MetalDevice::Impl
@@ -61,6 +61,8 @@ MetalDevice::~MetalDevice() = default;
 
 void MetalDevice::add(Buffer const &a, Buffer const &b, Buffer &c) const
 {
+  assert_same_device(a, b, c);
+
   id<MTLBuffer> const mtl_a = static_cast<id<MTLBuffer>>(a.handle.get());
   id<MTLBuffer> const mtl_b = static_cast<id<MTLBuffer>>(b.handle.get());
   id<MTLBuffer> mtl_c       = static_cast<id<MTLBuffer>>(c.handle.get());
@@ -110,7 +112,8 @@ Buffer MetalDevice::new_buffer(std::vector<float> data) const
           [buf release];
         }
       },
-    .size = data.size()
+    .size = data.size(),
+    .type = MetalDevice::s_type,
   };
 }
 
@@ -124,4 +127,9 @@ std::vector<float> MetalDevice::cpu(Buffer const &buffer) const
   return result;
 }
 
-} // namespace backend
+} // namespace gpu_playground::backend
+
+std::unique_ptr<gpu_playground::Device> gpu_playground::make_metal_device()
+{
+  return std::make_unique<gpu_playground::backend::MetalDevice>();
+}

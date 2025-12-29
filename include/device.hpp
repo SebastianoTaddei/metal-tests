@@ -26,6 +26,14 @@ using DevicePtr = std::shared_ptr<Device>;
 
 DevicePtr make_cpu_device();
 
+#ifdef GPU_PLAYGROUND_HAS_EIGEN
+DevicePtr make_eigen_device();
+#endif
+
+#ifdef GPU_PLAYGROUND_HAS_SIMD
+DevicePtr make_simd_device();
+#endif
+
 #ifdef GPU_PLAYGROUND_HAS_METAL
 DevicePtr make_metal_device();
 #endif

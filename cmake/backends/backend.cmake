@@ -1,3 +1,5 @@
+option(GPU_PLAYGROUND_ENABLE_EIGEN "Enable Eigen backend" OFF)
+option(GPU_PLAYGROUND_ENABLE_SIMD "Enable SIMD backend" OFF)
 option(GPU_PLAYGROUND_ENABLE_METAL "Enable Metal backend" OFF)
 
 add_library(gpu_playground_backend INTERFACE)
@@ -8,6 +10,23 @@ include(CPU)
 target_link_libraries(gpu_playground_backend INTERFACE
   cpu_backend
 )
+
+
+if(GPU_PLAYGROUND_ENABLE_EIGEN)
+  message(STATUS "GPU Playground: Eigen backend enabled")
+  include(Eigen)
+  target_link_libraries(gpu_playground_backend INTERFACE
+    eigen_backend
+  )
+endif()
+
+if(GPU_PLAYGROUND_ENABLE_SIMD)
+  message(STATUS "GPU Playground: SIMD backend enabled")
+  include(SIMD)
+  target_link_libraries(gpu_playground_backend INTERFACE
+    simd_backend
+  )
+endif()
 
 if(GPU_PLAYGROUND_ENABLE_METAL)
   if(NOT APPLE)
@@ -21,4 +40,3 @@ if(GPU_PLAYGROUND_ENABLE_METAL)
     metal_backend
   )
 endif()
-

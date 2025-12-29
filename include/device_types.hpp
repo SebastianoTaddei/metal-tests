@@ -9,6 +9,8 @@ namespace gpu_playground
 
 #define DEVICE_TYPES                                                                               \
   X(CPU)                                                                                           \
+  X(EIGEN)                                                                                         \
+  X(SIMD)                                                                                          \
   X(METAL)
 
 enum class DeviceType : uint8_t

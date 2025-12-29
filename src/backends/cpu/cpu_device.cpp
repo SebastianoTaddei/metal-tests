@@ -1,12 +1,11 @@
-#include "Eigen/Dense"
-#include "buffer.hpp"
-
 #include "cpu_device.hpp"
+#include "buffer.hpp"
+#include <iostream>
 
 namespace gpu_playground::backend
 {
 
-using CPUBuffer = Eigen::VectorXf;
+using CPUBuffer = std::vector<float>;
 
 CPUDevice::CPUDevice() {}
 
@@ -16,19 +15,23 @@ void CPUDevice::add(Buffer const &a, Buffer const &b, Buffer &c) const
 {
   assert_compatible(a, b, c);
 
-  auto cpu_a = static_cast<CPUBuffer const *>(a.handle.get());
-  auto cpu_b = static_cast<CPUBuffer const *>(b.handle.get());
-  auto cpu_c = static_cast<CPUBuffer *>(c.handle.get());
+  auto cpu_a = *static_cast<CPUBuffer const *>(a.handle.get());
+  auto cpu_b = *static_cast<CPUBuffer const *>(b.handle.get());
+  auto cpu_c = *static_cast<CPUBuffer *>(c.handle.get());
 
-  *cpu_c = *cpu_a + *cpu_b;
+  for (size_t i{0}; i < a.size; i++)
+  {
+    cpu_c[i] = cpu_a[i] + cpu_b[i];
+  }
 }
 
 Buffer CPUDevice::new_buffer(std::vector<float> data) const
 {
+  std::cout << data.size() << '\n';
   return Buffer{
     .handle =
       HandlePtr{
-        new CPUBuffer(Eigen::Map<CPUBuffer>(data.data(), data.size())),
+        new CPUBuffer(std::move(data)),
         [](void *ptr) -> void { delete static_cast<CPUBuffer *>(ptr); }
       },
     .size        = data.size(),
@@ -54,8 +57,7 @@ void CPUDevice::copy_buffer(Buffer const &from, Buffer &to) const
 
 std::vector<float> CPUDevice::cpu(Buffer const &buffer) const
 {
-  auto cpu_buffer = static_cast<CPUBuffer const *>(buffer.handle.get());
-  return std::vector<float>(cpu_buffer->data(), cpu_buffer->data() + cpu_buffer->size());
+  return *static_cast<CPUBuffer const *>(buffer.handle.get());
 }
 
 std::unique_ptr<Device> make_cpu_device();

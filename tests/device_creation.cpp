@@ -2,12 +2,24 @@
 
 #include "device.hpp"
 
+using namespace gpu_playground;
+
+void print_device_type(DevicePtr const &device)
+{
+  std::cout << "The device type is: " << get_device_name(device->type()) << '\n';
+}
+
 int main()
 {
-  auto cpu_device   = gpu_playground::make_cpu_device();
-  auto metal_device = gpu_playground::make_metal_device();
+  auto cpu_device   = make_cpu_device();
+  auto eigen_device = make_eigen_device();
+  auto simd_device  = make_simd_device();
+  auto metal_device = make_metal_device();
 
-  std::cout << "The CPU device is: " << gpu_playground::get_device_name(cpu_device->type()) << '\n';
-  std::cout << "The Metal device is: " << gpu_playground::get_device_name(metal_device->type()) << '\n';
+  print_device_type(cpu_device);
+  print_device_type(eigen_device);
+  print_device_type(simd_device);
+  print_device_type(metal_device);
+
   return 0;
 }

@@ -4,42 +4,41 @@
 #include "device.hpp"
 #include "tensor.hpp"
 
+using namespace gpu_playground;
+using vec = std::vector<float>;
+
+void test_vec_add(DevicePtr const &device, vec const &vec_a, vec const &vec_b)
+{
+  assert(vec_a.size() == vec_b.size());
+
+  auto const tensor_a = gpu_playground::Tensor(vec_a, device);
+  auto const tensor_b = gpu_playground::Tensor(vec_b, device);
+
+  auto const tensor_c = tensor_a + tensor_b;
+  auto const vec_c    = tensor_c.cpu();
+
+  std::cout << get_device_name(device->type()) << " add: ";
+  for (size_t i{0}; i < vec_a.size(); i++)
+  {
+    std::cout << vec_c.at(i) << " ";
+  }
+  std::cout << '\n';
+}
+
 int main()
 {
-  constexpr size_t len{3};
+  auto cpu_device   = make_cpu_device();
+  auto eigen_device = make_eigen_device();
+  auto simd_device  = make_simd_device();
+  auto metal_device = make_metal_device();
 
-  auto cpu_device = gpu_playground::make_cpu_device();
-  auto mtl_device = gpu_playground::make_metal_device();
+  std::vector<float> const vec_a{0.0, 1.0, 2.0};
+  std::vector<float> const vec_b{3.0, 4.0, 5.0};
 
-  std::vector<float> const a{0.0, 1.0, 2.0};
-  std::vector<float> const b{0.0, 1.0, 2.0};
-  std::vector<float> c(len, 0.0);
-
-  auto const cpu_a = gpu_playground::Tensor(a, cpu_device);
-  auto const cpu_b = gpu_playground::Tensor(b, cpu_device);
-  auto cpu_c       = gpu_playground::Tensor(c, cpu_device);
-  auto const mtl_a = gpu_playground::Tensor(a, mtl_device);
-  auto const mtl_b = gpu_playground::Tensor(b, mtl_device);
-  auto mtl_c       = gpu_playground::Tensor(c, mtl_device);
-
-  cpu_c = cpu_a + cpu_b;
-  mtl_c = mtl_a + mtl_b;
-
-  c = cpu_c.cpu();
-  std::cout << "CPU add: ";
-  for (size_t i{0}; i < len; i++)
-  {
-    std::cout << c.at(i) << " ";
-  }
-  std::cout << '\n';
-
-  c = mtl_c.cpu();
-  std::cout << "Metal add: ";
-  for (size_t i{0}; i < len; i++)
-  {
-    std::cout << c.at(i) << " ";
-  }
-  std::cout << '\n';
+  test_vec_add(cpu_device, vec_a, vec_b);
+  test_vec_add(eigen_device, vec_a, vec_b);
+  test_vec_add(simd_device, vec_a, vec_b);
+  test_vec_add(metal_device, vec_a, vec_b);
 
   return 0;
 }

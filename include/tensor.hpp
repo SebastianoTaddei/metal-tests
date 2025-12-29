@@ -43,7 +43,7 @@ public:
 
   friend Tensor operator+(Tensor lhs, Tensor const &rhs);
 
-  std::vector<float> cpu() { return this->device->cpu(this->buffer); }
+  std::vector<float> cpu() const { return this->device->cpu(this->buffer); }
 };
 
 inline Tensor operator+(Tensor lhs, Tensor const &rhs)

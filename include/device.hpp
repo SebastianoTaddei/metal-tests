@@ -14,7 +14,7 @@ class Device
 public:
   virtual ~Device() = default;
 
-  virtual Type type() const                                           = 0;
+  virtual DeviceType type() const                                     = 0;
   virtual void add(Buffer const &a, Buffer const &b, Buffer &c) const = 0;
   virtual Buffer new_buffer(std::vector<float> data) const            = 0;
   virtual std::vector<float> cpu(Buffer const &buffer) const          = 0;
@@ -32,7 +32,7 @@ namespace backend
 template <typename First, typename... Rest>
 inline void assert_same_device(First const &first, Rest const &...rest)
 {
-  const Type ref = first.type;
+  const DeviceType ref = first.type;
   ((assert(rest.type == ref && "Buffers are on different devices")), ...);
 }
 

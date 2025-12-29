@@ -14,7 +14,7 @@ struct Buffer
 {
   HandlePtr handle;
   size_t size;
-  Type type;
+  DeviceType type;
 };
 
 } // namespace gpu_playground

@@ -8,14 +8,14 @@ namespace gpu_playground::backend
 class CPUDevice final : public Device
 {
 private:
-  static constexpr Type s_type{Type::CPU};
+  static constexpr DeviceType s_type{DeviceType::CPU};
 
 public:
   CPUDevice();
 
   ~CPUDevice();
 
-  Type type() const override { return CPUDevice::s_type; }
+  DeviceType type() const override { return CPUDevice::s_type; }
 
   void add(Buffer const &a, Buffer const &b, Buffer &c) const override;
 

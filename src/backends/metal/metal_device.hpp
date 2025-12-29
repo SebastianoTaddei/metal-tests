@@ -8,7 +8,7 @@ namespace gpu_playground::backend
 class MetalDevice final : public Device
 {
 private:
-  static constexpr Type s_type{Type::METAL};
+  static constexpr DeviceType s_type{DeviceType::METAL};
   struct Impl;
   std::unique_ptr<Impl> pimpl;
 
@@ -17,7 +17,7 @@ public:
 
   ~MetalDevice();
 
-  Type type() const override { return MetalDevice::s_type; }
+  DeviceType type() const override { return MetalDevice::s_type; }
 
   void add(Buffer const &a, Buffer const &b, Buffer &c) const override;
 

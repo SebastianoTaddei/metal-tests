@@ -1,3 +1,4 @@
+#include "buffer.hpp"
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
 
@@ -61,11 +62,11 @@ MetalDevice::~MetalDevice() = default;
 
 void MetalDevice::add(Buffer const &a, Buffer const &b, Buffer &c) const
 {
-  assert_same_device(a, b, c);
+  assert_compatible(a, b, c);
 
-  id<MTLBuffer> const mtl_a = static_cast<id<MTLBuffer>>(a.handle.get());
-  id<MTLBuffer> const mtl_b = static_cast<id<MTLBuffer>>(b.handle.get());
-  id<MTLBuffer> mtl_c       = static_cast<id<MTLBuffer>>(c.handle.get());
+  auto const mtl_a = static_cast<MetalBuffer>(a.handle.get());
+  auto const mtl_b = static_cast<MetalBuffer>(b.handle.get());
+  auto mtl_c       = static_cast<MetalBuffer>(c.handle.get());
 
   id<MTLCommandBuffer> cmd = [this->pimpl->queue commandBuffer];
 
@@ -112,9 +113,36 @@ Buffer MetalDevice::new_buffer(std::vector<float> data) const
           [buf release];
         }
       },
-    .size = data.size(),
-    .type = MetalDevice::s_type,
+    .size        = data.size(),
+    .device_type = MetalDevice::s_type,
   };
+}
+
+Buffer MetalDevice::new_buffer_with_size(size_t size) const
+{
+  auto const data = std::vector<float>(size, 0.0);
+  return this->new_buffer(std::move(data));
+}
+
+void MetalDevice::copy_buffer(Buffer const &from, Buffer &to) const
+{
+  assert_compatible(from, to);
+
+  auto const metal_from = static_cast<MetalBuffer>(from.handle.get());
+  auto metal_to         = static_cast<MetalBuffer>(to.handle.get());
+
+  id<MTLCommandBuffer> commandBuffer = [this->pimpl->device newCommandQueue].commandBuffer;
+  id<MTLBlitCommandEncoder> blit     = [commandBuffer blitCommandEncoder];
+
+  [blit copyFromBuffer:metal_from
+          sourceOffset:0
+              toBuffer:metal_to
+     destinationOffset:0
+                  size:metal_from.length];
+
+  [blit endEncoding];
+  [commandBuffer commit];
+  [commandBuffer waitUntilCompleted];
 }
 
 std::vector<float> MetalDevice::cpu(Buffer const &buffer) const
@@ -129,7 +157,7 @@ std::vector<float> MetalDevice::cpu(Buffer const &buffer) const
 
 } // namespace gpu_playground::backend
 
-std::unique_ptr<gpu_playground::Device> gpu_playground::make_metal_device()
+gpu_playground::DevicePtr gpu_playground::make_metal_device()
 {
-  return std::make_unique<gpu_playground::backend::MetalDevice>();
+  return std::make_shared<gpu_playground::backend::MetalDevice>();
 }

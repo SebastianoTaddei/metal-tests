@@ -1,4 +1,5 @@
 #include "Eigen/Dense"
+#include "buffer.hpp"
 
 #include "cpu_device.hpp"
 
@@ -13,13 +14,11 @@ CPUDevice::~CPUDevice() {}
 
 void CPUDevice::add(Buffer const &a, Buffer const &b, Buffer &c) const
 {
-  assert_same_device(a, b, c);
+  assert_compatible(a, b, c);
 
   auto cpu_a = static_cast<CPUBuffer const *>(a.handle.get());
   auto cpu_b = static_cast<CPUBuffer const *>(b.handle.get());
   auto cpu_c = static_cast<CPUBuffer *>(c.handle.get());
-  assert(cpu_a->size() == cpu_b->size());
-  assert(cpu_b->size() == cpu_c->size());
 
   *cpu_c = *cpu_a + *cpu_b;
 }
@@ -32,9 +31,25 @@ Buffer CPUDevice::new_buffer(std::vector<float> data) const
         new CPUBuffer(Eigen::Map<CPUBuffer>(data.data(), data.size())),
         [](void *ptr) -> void { delete static_cast<CPUBuffer *>(ptr); }
       },
-    .size = data.size(),
-    .type = CPUDevice::s_type,
+    .size        = data.size(),
+    .device_type = CPUDevice::s_type,
   };
+}
+
+Buffer CPUDevice::new_buffer_with_size(size_t size) const
+{
+  auto const data = std::vector<float>(size, 0.0);
+  return this->new_buffer(std::move(data));
+}
+
+void CPUDevice::copy_buffer(Buffer const &from, Buffer &to) const
+{
+  assert_compatible(from, to);
+
+  auto cpu_from = static_cast<CPUBuffer const *>(from.handle.get());
+  auto cpu_to   = static_cast<CPUBuffer *>(to.handle.get());
+
+  *cpu_to = *cpu_from;
 }
 
 std::vector<float> CPUDevice::cpu(Buffer const &buffer) const
@@ -47,7 +62,7 @@ std::unique_ptr<Device> make_cpu_device();
 
 } // namespace gpu_playground::backend
 
-std::unique_ptr<gpu_playground::Device> gpu_playground::make_cpu_device()
+gpu_playground::DevicePtr gpu_playground::make_cpu_device()
 {
-  return std::make_unique<gpu_playground::backend::CPUDevice>();
+  return std::make_shared<gpu_playground::backend::CPUDevice>();
 }

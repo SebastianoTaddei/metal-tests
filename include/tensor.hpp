@@ -10,7 +10,7 @@ class Tensor
 {
 private:
   std::shared_ptr<Device> device;
-  Buffer buffer;
+  backend::Buffer buffer;
 
 public:
   Tensor(std::vector<float> data, DevicePtr const &device)

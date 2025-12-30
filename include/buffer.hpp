@@ -7,7 +7,7 @@
 
 #include "device_types.hpp"
 
-namespace gpu_playground
+namespace gpu_playground::backend
 {
 
 using HandlePtr = std::unique_ptr<void, std::function<void(void *)>>;
@@ -26,9 +26,6 @@ struct Buffer
   Buffer(Buffer &&)            = default;
   Buffer &operator=(Buffer &&) = default;
 };
-
-namespace backend
-{
 
 template <typename... Rest>
 inline void is_buffer()
@@ -60,6 +57,4 @@ inline void assert_compatible(Buffer const &first, Rest const &...rest)
   assert_same_size(first, rest...);
 }
 
-} // namespace backend
-
-} // namespace gpu_playground
+} // namespace gpu_playground::backend

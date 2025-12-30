@@ -1,6 +1,5 @@
 #include "Eigen/Dense"
 
-#include "buffer.hpp"
 #include "eigen_device.hpp"
 
 namespace gpu_playground::backend

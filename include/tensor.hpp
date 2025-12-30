@@ -25,6 +25,11 @@ public:
   {
   }
 
+  Tensor(size_t size, DevicePtr device)
+      : device(std::move(device)), buffer(this->device->new_buffer_with_size(size))
+  {
+  }
+
   Tensor(Tensor const &other)
       : device(other.device), buffer(this->device->new_buffer_with_size(other.buffer.size()))
   {

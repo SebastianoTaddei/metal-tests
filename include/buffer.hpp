@@ -28,7 +28,7 @@ struct Buffer
 };
 
 template <typename... Rest>
-inline void is_buffer()
+inline void assert_is_buffer()
 {
   static_assert((std::is_same_v<Buffer, Rest> && ...), "Only Buffers are supported");
 }
@@ -36,7 +36,7 @@ inline void is_buffer()
 template <typename... Rest>
 inline void assert_same_device(Buffer const &first, Rest const &...rest)
 {
-  is_buffer<Rest...>();
+  assert_is_buffer<Rest...>();
   const DeviceType ref = first.device_type;
   ((assert(rest.device_type == ref && "Buffers are on different devices")), ...);
 }
@@ -44,17 +44,26 @@ inline void assert_same_device(Buffer const &first, Rest const &...rest)
 template <typename... Rest>
 inline void assert_same_size(Buffer const &first, Rest const &...rest)
 {
-  is_buffer<Rest...>();
+  assert_is_buffer<Rest...>();
   const std::size_t ref = first.size;
   ((assert(rest.size == ref && "Buffers have different sizes")), ...);
 }
 
 template <typename... Rest>
+inline void assert_size_nonzero(Buffer const &first, Rest const &...rest)
+{
+  assert_is_buffer<Rest...>();
+  assert(first.size > 0 && "Buffers have zero size");
+  ((assert(rest.size > 0 && "Buffers have zero size")), ...);
+}
+
+template <typename... Rest>
 inline void assert_compatible(Buffer const &first, Rest const &...rest)
 {
-  is_buffer<Rest...>();
+  assert_is_buffer<Rest...>();
   assert_same_device(first, rest...);
   assert_same_size(first, rest...);
+  assert_size_nonzero(first, rest...);
 }
 
 } // namespace gpu_playground::backend

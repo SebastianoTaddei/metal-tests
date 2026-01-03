@@ -12,6 +12,7 @@ struct MetalDevice::Impl
   id<MTLCommandQueue> queue{nil};
   id<MTLLibrary> library{nil};
   id<MTLComputePipelineState> mat_add_ps{nil};
+  id<MTLComputePipelineState> mat_mul_ps{nil};
 
   Impl() : device(MTLCreateSystemDefaultDevice())
   {
@@ -35,6 +36,12 @@ struct MetalDevice::Impl
     this->mat_add_ps = [this->device newComputePipelineStateWithFunction:fn error:&error];
     assert(this->mat_add_ps != nil);
 
+    fn = [this->library newFunctionWithName:@"mat_mul"];
+    assert(fn != nil);
+
+    this->mat_mul_ps = [this->device newComputePipelineStateWithFunction:fn error:&error];
+    assert(this->mat_mul_ps != nil);
+
     [fn release];
   }
 
@@ -45,6 +52,7 @@ struct MetalDevice::Impl
 
   ~Impl()
   {
+    [this->mat_mul_ps release];
     [this->mat_add_ps release];
     [this->library release];
     [this->queue release];
@@ -68,8 +76,7 @@ void MetalDevice::add(Buffer const &a, Buffer const &b, Buffer &c) const
     auto mtl_b = static_cast<MetalBuffer>(b.get());
     auto mtl_c = static_cast<MetalBuffer>(c.get());
 
-    id<MTLCommandBuffer> cmd = [this->pimpl->queue commandBuffer];
-
+    id<MTLCommandBuffer> cmd         = [this->pimpl->queue commandBuffer];
     id<MTLComputeCommandEncoder> enc = [cmd computeCommandEncoder];
 
     [enc setComputePipelineState:this->pimpl->mat_add_ps];
@@ -99,7 +106,34 @@ void MetalDevice::mul(Buffer const &a, Buffer const &b, Buffer &c) const
   {
     assert_compatible_mul(a, b, c);
 
-    NSLog(@"Metal multiplication to be implemented");
+    uint const m = a.shape().rows;
+    uint const k = a.shape().cols;
+    uint const n = b.shape().cols;
+
+    auto mtl_a = static_cast<MetalBuffer>(a.get());
+    auto mtl_b = static_cast<MetalBuffer>(b.get());
+    auto mtl_c = static_cast<MetalBuffer>(c.get());
+
+    id<MTLCommandBuffer> cmd         = [this->pimpl->queue commandBuffer];
+    id<MTLComputeCommandEncoder> enc = [cmd computeCommandEncoder];
+
+    [enc setComputePipelineState:this->pimpl->mat_mul_ps];
+    [enc setBuffer:mtl_a offset:0 atIndex:0];
+    [enc setBuffer:mtl_b offset:0 atIndex:1];
+    [enc setBuffer:mtl_c offset:0 atIndex:2];
+    [enc setBytes:&m length:sizeof(uint) atIndex:3];
+    [enc setBytes:&k length:sizeof(uint) atIndex:4];
+    [enc setBytes:&n length:sizeof(uint) atIndex:5];
+
+    MTLSize const gridSize = MTLSizeMake(n, m, 1);
+    NSUInteger const tg    = 16;
+    MTLSize const tgSize   = MTLSizeMake(tg, tg, 1);
+
+    [enc dispatchThreads:gridSize threadsPerThreadgroup:tgSize];
+
+    [enc endEncoding];
+    [cmd commit];
+    [cmd waitUntilCompleted];
   }
 }
 

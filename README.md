@@ -9,13 +9,13 @@ The idea is to play around with various linear algebra concepts for the GPU.
 For now the focus is on:
 
 - [x] Vector-vector summation.
-- [ ] Vector-vector multiplication.
+- [x] Vector-vector multiplication.
 - [ ] Vector-vector multiplication (element-wise).
 - [ ] Matrix-vector summation.
-- [ ] Matrix-vector multiplication.
+- [x] Matrix-vector multiplication.
 - [ ] Matrix-vector multiplication (element-wise).
-- [ ] Matrix-matrix summation.
-- [ ] Matrix-matrix multiplication.
+- [x] Matrix-matrix summation.
+- [x] Matrix-matrix multiplication.
 - [ ] Matrix-matrix multiplication (element-wise).
 - [ ] Solving linear systems (*i.e.,* $Ax = b$)
 

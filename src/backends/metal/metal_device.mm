@@ -13,6 +13,8 @@ struct MetalDevice::Impl
   id<MTLLibrary> library{nil};
   id<MTLComputePipelineState> mat_add_ps{nil};
   id<MTLComputePipelineState> mat_mul_ps{nil};
+  id<MTLComputePipelineState> mat_cmul_ps{nil};
+  id<MTLComputePipelineState> mat_cdiv_ps{nil};
 
   Impl() : device(MTLCreateSystemDefaultDevice())
   {
@@ -42,6 +44,18 @@ struct MetalDevice::Impl
     this->mat_mul_ps = [this->device newComputePipelineStateWithFunction:fn error:&error];
     assert(this->mat_mul_ps != nil);
 
+    fn = [this->library newFunctionWithName:@"mat_cmul"];
+    assert(fn != nil);
+
+    this->mat_cmul_ps = [this->device newComputePipelineStateWithFunction:fn error:&error];
+    assert(this->mat_cmul_ps != nil);
+
+    fn = [this->library newFunctionWithName:@"mat_cdiv"];
+    assert(fn != nil);
+
+    this->mat_cdiv_ps = [this->device newComputePipelineStateWithFunction:fn error:&error];
+    assert(this->mat_cdiv_ps != nil);
+
     [fn release];
   }
 
@@ -70,7 +84,7 @@ void MetalDevice::add(Buffer const &a, Buffer const &b, Buffer &c) const
 {
   @autoreleasepool
   {
-    assert_compatible_add(a, b, c);
+    assert_same_shape(a, b, c);
 
     auto mtl_a = static_cast<MetalBuffer>(a.get());
     auto mtl_b = static_cast<MetalBuffer>(b.get());
@@ -129,6 +143,74 @@ void MetalDevice::mul(Buffer const &a, Buffer const &b, Buffer &c) const
     MTLSize const tgSize   = MTLSizeMake(tg, tg, 1);
 
     [enc dispatchThreads:gridSize threadsPerThreadgroup:tgSize];
+
+    [enc endEncoding];
+    [cmd commit];
+    [cmd waitUntilCompleted];
+  }
+}
+
+void MetalDevice::cmul(Buffer const &a, Buffer const &b, Buffer &c) const
+{
+  @autoreleasepool
+  {
+    assert_same_shape(a, b, c);
+
+    auto mtl_a = static_cast<MetalBuffer>(a.get());
+    auto mtl_b = static_cast<MetalBuffer>(b.get());
+    auto mtl_c = static_cast<MetalBuffer>(c.get());
+
+    id<MTLCommandBuffer> cmd         = [this->pimpl->queue commandBuffer];
+    id<MTLComputeCommandEncoder> enc = [cmd computeCommandEncoder];
+
+    [enc setComputePipelineState:this->pimpl->mat_cmul_ps];
+    [enc setBuffer:mtl_a offset:0 atIndex:0];
+    [enc setBuffer:mtl_b offset:0 atIndex:1];
+    [enc setBuffer:mtl_c offset:0 atIndex:2];
+
+    NSUInteger const n = a.size();
+
+    MTLSize const gridSize = MTLSizeMake(n, 1, 1);
+    NSUInteger const tgSize =
+        std::min<NSUInteger>(this->pimpl->mat_cmul_ps.maxTotalThreadsPerThreadgroup, n);
+
+    MTLSize const threadgroupSize = MTLSizeMake(tgSize, 1, 1);
+
+    [enc dispatchThreads:gridSize threadsPerThreadgroup:threadgroupSize];
+
+    [enc endEncoding];
+    [cmd commit];
+    [cmd waitUntilCompleted];
+  }
+}
+
+void MetalDevice::cdiv(Buffer const &a, Buffer const &b, Buffer &c) const
+{
+  @autoreleasepool
+  {
+    assert_same_shape(a, b, c);
+
+    auto mtl_a = static_cast<MetalBuffer>(a.get());
+    auto mtl_b = static_cast<MetalBuffer>(b.get());
+    auto mtl_c = static_cast<MetalBuffer>(c.get());
+
+    id<MTLCommandBuffer> cmd         = [this->pimpl->queue commandBuffer];
+    id<MTLComputeCommandEncoder> enc = [cmd computeCommandEncoder];
+
+    [enc setComputePipelineState:this->pimpl->mat_cdiv_ps];
+    [enc setBuffer:mtl_a offset:0 atIndex:0];
+    [enc setBuffer:mtl_b offset:0 atIndex:1];
+    [enc setBuffer:mtl_c offset:0 atIndex:2];
+
+    NSUInteger const n = a.size();
+
+    MTLSize const gridSize = MTLSizeMake(n, 1, 1);
+    NSUInteger const tgSize =
+        std::min<NSUInteger>(this->pimpl->mat_cdiv_ps.maxTotalThreadsPerThreadgroup, n);
+
+    MTLSize const threadgroupSize = MTLSizeMake(tgSize, 1, 1);
+
+    [enc dispatchThreads:gridSize threadsPerThreadgroup:threadgroupSize];
 
     [enc endEncoding];
     [cmd commit];

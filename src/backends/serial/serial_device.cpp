@@ -9,7 +9,7 @@ using SerialBuffer = std::vector<float>;
 
 void SerialDevice::add(Buffer const &a, Buffer const &b, Buffer &c) const
 {
-  assert_compatible_add(a, b, c);
+  assert_same_shape(a, b, c);
 
   auto const &serial_a = *static_cast<SerialBuffer const *>(a.get());
   auto const &serial_b = *static_cast<SerialBuffer const *>(b.get());
@@ -43,6 +43,34 @@ void SerialDevice::mul(Buffer const &a, Buffer const &b, Buffer &c) const
         serial_c[(i * n) + j] = std::fma(a_ip, serial_b[(p * n) + j], serial_c[(i * n) + j]);
       }
     }
+  }
+}
+
+void SerialDevice::cmul(Buffer const &a, Buffer const &b, Buffer &c) const
+{
+  assert_same_shape(a, b, c);
+
+  auto const &serial_a = *static_cast<SerialBuffer const *>(a.get());
+  auto const &serial_b = *static_cast<SerialBuffer const *>(b.get());
+  auto &serial_c       = *static_cast<SerialBuffer *>(c.get());
+
+  for (size_t i{0}; i < a.size(); i++)
+  {
+    serial_c[i] = serial_a[i] * serial_b[i];
+  }
+}
+
+void SerialDevice::cdiv(Buffer const &a, Buffer const &b, Buffer &c) const
+{
+  assert_same_shape(a, b, c);
+
+  auto const &serial_a = *static_cast<SerialBuffer const *>(a.get());
+  auto const &serial_b = *static_cast<SerialBuffer const *>(b.get());
+  auto &serial_c       = *static_cast<SerialBuffer *>(c.get());
+
+  for (size_t i{0}; i < a.size(); i++)
+  {
+    serial_c[i] = serial_a[i] / serial_b[i];
   }
 }
 

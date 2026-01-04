@@ -9,19 +9,18 @@
 using namespace gpu_playground;
 
 static constexpr size_t RUNS{1000};
-static constexpr size_t ROWS{1024};
-static constexpr size_t COLS{1024};
+static constexpr size_t ROWS{10000};
 
 namespace
 {
 
-void benchmark_mat_vec_mul(DevicePtr const &device, Tensor &a, Tensor &b)
+void benchmark_vec_cmul(DevicePtr const &device, Tensor &a, Tensor &b)
 
 {
   a.to(device);
   b.to(device);
 
-  auto c = a * b;
+  auto c = a.cmul(b);
 
   std::cout << get_device_name(device->type()) << ": ";
   {
@@ -29,7 +28,7 @@ void benchmark_mat_vec_mul(DevicePtr const &device, Tensor &a, Tensor &b)
 
     for (size_t i{0}; i < RUNS; i++)
     {
-      c = a * b;
+      c = a.cmul(b);
     }
   }
 }
@@ -43,19 +42,18 @@ int main()
   auto simd_device   = make_simd_device();
   auto metal_device  = make_metal_device();
 
-  std::vector<float> a_data(ROWS * COLS);
-  std::vector<float> b_data(COLS);
+  std::vector<float> a_data(ROWS);
+  std::vector<float> b_data(ROWS);
   std::iota(a_data.begin(), a_data.end(), 0.0);
   std::iota(b_data.begin(), b_data.end(), 1.0);
-  Shape const a_shape{.rows = ROWS, .cols = COLS};
-  Shape const b_shape{.rows = COLS, .cols = 1};
-  Tensor a(a_data, a_shape, serial_device);
-  Tensor b(b_data, b_shape, serial_device);
+  Shape const shape{.rows = ROWS, .cols = 1};
+  Tensor a(a_data, shape, serial_device);
+  Tensor b(b_data, shape, serial_device);
 
-  benchmark_mat_vec_mul(serial_device, a, b);
-  benchmark_mat_vec_mul(eigen_device, a, b);
-  benchmark_mat_vec_mul(simd_device, a, b);
-  benchmark_mat_vec_mul(metal_device, a, b);
+  benchmark_vec_cmul(serial_device, a, b);
+  benchmark_vec_cmul(eigen_device, a, b);
+  benchmark_vec_cmul(simd_device, a, b);
+  benchmark_vec_cmul(metal_device, a, b);
 
   return 0;
 }

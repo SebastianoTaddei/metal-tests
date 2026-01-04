@@ -15,13 +15,13 @@ static constexpr size_t COLS{1024};
 namespace
 {
 
-void benchmark_mat_vec_mul(DevicePtr const &device, Tensor &a, Tensor &b)
+void benchmark_mat_cmul(DevicePtr const &device, Tensor &a, Tensor &b)
 
 {
   a.to(device);
   b.to(device);
 
-  auto c = a * b;
+  auto c = a.cmul(b);
 
   std::cout << get_device_name(device->type()) << ": ";
   {
@@ -29,7 +29,7 @@ void benchmark_mat_vec_mul(DevicePtr const &device, Tensor &a, Tensor &b)
 
     for (size_t i{0}; i < RUNS; i++)
     {
-      c = a * b;
+      c = a.cmul(b);
     }
   }
 }
@@ -44,18 +44,18 @@ int main()
   auto metal_device  = make_metal_device();
 
   std::vector<float> a_data(ROWS * COLS);
-  std::vector<float> b_data(COLS);
+  std::vector<float> b_data(ROWS * COLS);
   std::iota(a_data.begin(), a_data.end(), 0.0);
   std::iota(b_data.begin(), b_data.end(), 1.0);
   Shape const a_shape{.rows = ROWS, .cols = COLS};
-  Shape const b_shape{.rows = COLS, .cols = 1};
+  Shape const b_shape{.rows = ROWS, .cols = COLS};
   Tensor a(a_data, a_shape, serial_device);
   Tensor b(b_data, b_shape, serial_device);
 
-  benchmark_mat_vec_mul(serial_device, a, b);
-  benchmark_mat_vec_mul(eigen_device, a, b);
-  benchmark_mat_vec_mul(simd_device, a, b);
-  benchmark_mat_vec_mul(metal_device, a, b);
+  benchmark_mat_cmul(serial_device, a, b);
+  benchmark_mat_cmul(eigen_device, a, b);
+  benchmark_mat_cmul(simd_device, a, b);
+  benchmark_mat_cmul(metal_device, a, b);
 
   return 0;
 }

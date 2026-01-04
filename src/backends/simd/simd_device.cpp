@@ -49,28 +49,23 @@ void SIMDDevice::mul(Buffer const &a, Buffer const &b, Buffer &c) const
 
   for (size_t i{0}; i < m; i++)
   {
-    for (size_t j{0}; j < n_simd; j += simd_size)
+    for (size_t p = 0; p < k; ++p)
     {
-      xsimd::batch<float> bacc{0.0};
-      for (size_t p{0}; p < k; p++)
+      auto const a_ip = xsimd::broadcast(simd_a[(i * k) + p]);
+
+      for (size_t j{0}; j < n_simd; j += simd_size)
       {
-        auto const ba = xsimd::broadcast(simd_a[(i * k) + p]);
-        auto const bb = xsimd::load_aligned(&simd_b[(p * n) + j]);
-        bacc          = xsimd::fma(ba, bb, bacc);
+        auto c       = xsimd::load_aligned(&simd_c[(i * n) + j]);
+        auto const b = xsimd::load_aligned(&simd_b[(p * n) + j]);
+        c            = xsimd::fma(a_ip, b, c);
+        c.store_aligned(&simd_c[(i * n) + j]);
       }
 
-      bacc.store_aligned(&simd_c[(i * n) + j]);
-    }
-
-    for (size_t j{n_simd}; j < n; j++)
-    {
-      float acc{0.0};
-      for (size_t p{0}; p < k; p++)
+      for (size_t j{n_simd}; j < n; j++)
       {
-        acc = std::fma(simd_a[(i * k) + p], simd_b[(p * n) + j], acc);
+        simd_c[(i * n) + j] =
+            std::fma(simd_a[(i * k) + p], simd_b[(p * n) + j], simd_c[(i * n) + j]);
       }
-
-      simd_c[(i * n) + j] = acc;
     }
   }
 }

@@ -29,19 +29,19 @@ void SerialDevice::mul(Buffer const &a, Buffer const &b, Buffer &c) const
   auto const &serial_b = *static_cast<SerialBuffer const *>(b.get());
   auto &serial_c       = *static_cast<SerialBuffer *>(c.get());
 
-  auto const [a_rows, a_cols] = a.shape();
-  auto const b_cols           = b.shape().cols;
-  for (size_t i{0}; i < a_rows; i++)
+  auto const [m, k] = a.shape();
+  auto const n      = b.shape().cols;
+
+  for (size_t i{0}; i < m; i++)
   {
-    for (size_t j{0}; j < b_cols; j++)
+    for (size_t p{0}; p < k; p++)
     {
-      auto const idx = (i * b_cols) + j;
-      float support{0.0};
-      for (size_t k{0}; k < a_cols; k++)
+      auto const a_ip = serial_a[(i * k) + p];
+
+      for (size_t j{0}; j < n; j++)
       {
-        support = std::fma(serial_a[(i * a_cols) + k], serial_b[(k * b_cols) + j], support);
+        serial_c[(i * n) + j] = std::fma(a_ip, serial_b[(p * n) + j], serial_c[(i * n) + j]);
       }
-      serial_c[idx] = support;
     }
   }
 }

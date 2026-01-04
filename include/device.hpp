@@ -21,6 +21,9 @@ public:
   virtual void
   mul(backend::Buffer const &a, backend::Buffer const &b, backend::Buffer &c) const = 0;
 
+  virtual void
+  cmul(backend::Buffer const &a, backend::Buffer const &b, backend::Buffer &c) const = 0;
+
   [[nodiscard]] virtual backend::Buffer new_buffer(std::vector<float> data, Shape shape) const = 0;
 
   [[nodiscard]] backend::Buffer new_buffer_with_shape(Shape shape) const

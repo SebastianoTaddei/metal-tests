@@ -79,6 +79,13 @@ public:
     return out;
   }
 
+  [[nodiscard]] Tensor cmul(Tensor const &other) const
+  {
+    Tensor out{this->buffer.shape(), this->device};
+    this->device->cmul(this->buffer, other.buffer, out.buffer);
+    return out;
+  }
+
   friend std::ostream &operator<<(std::ostream &os, Tensor const &t);
 
   [[nodiscard]] std::vector<float> cpu() const { return this->device->cpu(this->buffer); }

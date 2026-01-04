@@ -1,4 +1,3 @@
-#include "Eigen/Core"
 #include "Eigen/Dense"
 
 #include "eigen_device.hpp"
@@ -28,6 +27,17 @@ void EigenDevice::mul(Buffer const &a, Buffer const &b, Buffer &c) const
   auto &eigen_c       = *static_cast<EigenBuffer *>(c.get());
 
   eigen_c = eigen_a * eigen_b;
+}
+
+void EigenDevice::cmul(Buffer const &a, Buffer const &b, Buffer &c) const
+{
+  assert_same_shape(a, b, c);
+
+  auto const &eigen_a = *static_cast<EigenBuffer const *>(a.get());
+  auto const &eigen_b = *static_cast<EigenBuffer const *>(b.get());
+  auto &eigen_c       = *static_cast<EigenBuffer *>(c.get());
+
+  eigen_c = eigen_a.cwiseProduct(eigen_b);
 }
 
 Buffer EigenDevice::new_buffer(std::vector<float> data, Shape shape) const

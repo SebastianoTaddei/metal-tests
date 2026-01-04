@@ -11,7 +11,7 @@ For now the focus is on:
 - [x] Vector-vector summation.
 - [x] Vector-vector multiplication.
 - [ ] Vector-vector multiplication (element-wise).
-- [ ] Matrix-vector summation.
+- [ ] Matrix-vector summation (broadcast).
 - [x] Matrix-vector multiplication.
 - [ ] Matrix-vector multiplication (element-wise).
 - [x] Matrix-matrix summation.

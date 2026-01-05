@@ -96,8 +96,6 @@ inline void assert_valid_copy(Buffer const &first, Rest const &...rest)
 inline void assert_valid_mul(Buffer const &a, Buffer const &b, Buffer const &c)
 {
 #ifndef NDEBUG
-  auto const rows = a.shape().rows;
-  auto const cols = b.shape().cols;
   assert(a.shape().cols == b.shape().rows and "Input buffers shape error");
   assert(
       (c.shape().rows == a.shape().rows and c.shape().cols == b.shape().cols) and
@@ -120,8 +118,7 @@ inline void assert_same_shape(Buffer const &first, Rest const &...rest)
 {
 #ifndef NDEBUG
   assert_valid_buffers(first, rest...);
-  auto const rows = first.shape().rows;
-  auto const cols = first.shape().cols;
+  auto const [rows, cols] = first.shape();
   (assert(rest.shape().rows == rows and "Buffers must have the same number of rows"), ...);
   (assert(rest.shape().cols == cols and "Buffers must have the same number of columns"), ...);
 #endif

@@ -43,14 +43,6 @@ target_include_directories(gpu_playground INTERFACE
 )
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-  if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Debug")
-    message(STATUS
-      "BSplineX: "
-      "CMAKE_BUILD_TYPE not specified, defaulting to ${CMAKE_BUILD_TYPE}"
-    )
-  endif()
-
   option(BUILD_TESTS "Build tests" OFF)
   option(BUILD_BENCHMARKS "Build benchmarks" OFF)
 

@@ -146,7 +146,8 @@ Buffer EigenDevice::new_buffer(std::vector<float> data, Shape shape) const
                   static_cast<Eigen::Index>(shape.cols)
               )
           ),
-          [](void *ptr) -> void { delete static_cast<EigenBuffer *>(ptr); }
+          [](void *ptr) -> void
+          { std::default_delete<EigenBuffer>{}(static_cast<EigenBuffer *>(ptr)); }
       },
       shape,
       EigenDevice::s_type

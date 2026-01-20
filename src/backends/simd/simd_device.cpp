@@ -1,6 +1,7 @@
 #include <cmath>
 
-#include "xsimd/xsimd.hpp"
+#include <memory>
+#include <xsimd/xsimd.hpp>
 
 #include "simd_device.hpp"
 

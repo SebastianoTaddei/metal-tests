@@ -1,5 +1,6 @@
-#include "Eigen/Dense"
 #include "buffer.hpp"
+#include <Eigen/Dense>
+#include <memory>
 
 #include "eigen_device.hpp"
 

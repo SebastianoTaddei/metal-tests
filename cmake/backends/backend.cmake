@@ -3,64 +3,59 @@ option(GPU_PLAYGROUND_ENABLE_SIMD "Enable SIMD backend" OFF)
 option(GPU_PLAYGROUND_ENABLE_METAL "Enable Metal backend" OFF)
 option(GPU_PLAYGROUND_ENABLE_CUDA "Enable CUDA backend" OFF)
 option(GPU_PLAYGROUND_ENABLE_MPS "Enable MPS backend" OFF)
+option(GPU_PLAYGROUND_ENABLE_TENSOR "Enable TENSOR backend" OFF)
 
 add_library(gpu_playground_backend INTERFACE)
 add_library(gpu_playground::backend ALIAS gpu_playground_backend)
 
 message(STATUS "GPU Playground: serial backend always enabled")
 include(serial)
-target_link_libraries(gpu_playground_backend INTERFACE
-  serial_backend
-)
-
+target_link_libraries(gpu_playground_backend INTERFACE serial_backend)
 
 if(GPU_PLAYGROUND_ENABLE_EIGEN)
-  message(STATUS "GPU Playground: Eigen backend enabled")
-  include(Eigen)
-  target_link_libraries(gpu_playground_backend INTERFACE
-    eigen_backend
-  )
+    message(STATUS "GPU Playground: Eigen backend enabled")
+    include(Eigen)
+    target_link_libraries(gpu_playground_backend INTERFACE eigen_backend)
 endif()
 
 if(GPU_PLAYGROUND_ENABLE_SIMD)
-  message(STATUS "GPU Playground: SIMD backend enabled")
-  include(SIMD)
-  target_link_libraries(gpu_playground_backend INTERFACE
-    simd_backend
-  )
+    message(STATUS "GPU Playground: SIMD backend enabled")
+    include(SIMD)
+    target_link_libraries(gpu_playground_backend INTERFACE simd_backend)
 endif()
 
 if(GPU_PLAYGROUND_ENABLE_METAL)
-  if(NOT APPLE)
-    message(FATAL_ERROR
-      "GPU Playground: Metal backend is only supported on macOS"
-    )
-  endif()
-  message(STATUS "GPU Playground: Metal backend enabled")
-  include(Metal)
-  target_link_libraries(gpu_playground_backend INTERFACE
-    metal_backend
-  )
+    if(NOT APPLE)
+        message(
+            FATAL_ERROR
+            "GPU Playground: Metal backend is only supported on macOS"
+        )
+    endif()
+    message(STATUS "GPU Playground: Metal backend enabled")
+    include(Metal)
+    target_link_libraries(gpu_playground_backend INTERFACE metal_backend)
 endif()
 
 if(GPU_PLAYGROUND_ENABLE_CUDA)
-  message(STATUS "GPU Playground: CUDA backend enabled")
-  include(CUDA)
-  target_link_libraries(gpu_playground_backend INTERFACE
-    cuda_backend
-  )
+    message(STATUS "GPU Playground: CUDA backend enabled")
+    include(CUDA)
+    target_link_libraries(gpu_playground_backend INTERFACE cuda_backend)
 endif()
 
 if(GPU_PLAYGROUND_ENABLE_MPS)
-  if(NOT APPLE)
-    message(FATAL_ERROR
-      "GPU Playground: MPS backend is only supported on macOS"
-    )
-  endif()
-  message(STATUS "GPU Playground: MPS backend enabled")
-  include(MPS)
-  target_link_libraries(gpu_playground_backend INTERFACE
-    mps_backend
-  )
+    if(NOT APPLE)
+        message(
+            FATAL_ERROR
+            "GPU Playground: MPS backend is only supported on macOS"
+        )
+    endif()
+    message(STATUS "GPU Playground: MPS backend enabled")
+    include(MPS)
+    target_link_libraries(gpu_playground_backend INTERFACE mps_backend)
 endif()
 
+if(GPU_PLAYGROUND_ENABLE_TENSOR)
+    message(STATUS "GPU Playground: TENSOR backend enabled")
+    include(TENSOR)
+    target_link_libraries(gpu_playground_backend INTERFACE tensor_backend)
+endif()

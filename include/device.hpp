@@ -90,6 +90,10 @@ DevicePtr make_cuda_device();
 DevicePtr make_mps_device();
 #endif
 
+#ifdef GPU_PLAYGROUND_HAS_TENSOR
+DevicePtr make_tensor_device();
+#endif
+
 inline std::array<DevicePtr, DeviceIdx::COUNT> make_devices()
 {
   std::array<DevicePtr, DeviceIdx::COUNT> devices{};
@@ -119,6 +123,11 @@ inline std::array<DevicePtr, DeviceIdx::COUNT> make_devices()
   devices[DeviceIdx::MPS] = make_mps_device();
 #else
   devices[DeviceIdx::MPS] = nullptr;
+#endif
+#ifdef GPU_PLAYGROUND_HAS_TENSOR
+  devices[DeviceIdx::TENSOR] = make_tensor_device();
+#else
+  devices[DeviceIdx::TENSOR] = nullptr;
 #endif
 
   return devices;
